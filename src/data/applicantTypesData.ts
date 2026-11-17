@@ -787,3 +787,6 @@ export function findApplicantBySlug(pathname: string): ApplicantTypeDetail | und
 export function findApplicantById(id: string): ApplicantTypeDetail | undefined {
   return EXACT_EIGHT_APPLICANT_OPTIONS.find((item) => item.id === id);
 }
+
+export const findApplicantTypeBySlug = findApplicantBySlug;
+

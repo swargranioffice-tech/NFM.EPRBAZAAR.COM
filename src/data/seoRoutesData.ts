@@ -217,6 +217,9 @@ export function findMetalPageBySlug(pathname: string): MetalRegistrationPageData
   return METAL_REGISTRATION_PAGES.find((m) => m.slug === normalized);
 }
 
+export const findSEOPageBySlug = findMetalPageBySlug;
+
+
 export interface SitemapUrlEntry {
   path: string;
   priority: string;
