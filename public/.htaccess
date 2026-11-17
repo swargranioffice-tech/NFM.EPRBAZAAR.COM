@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Legacy redirects for clean subdomain SEO
+  RewriteRule ^non-ferrous-metal-epr/?$ / [R=301,L]
+  RewriteRule ^non-ferrous-metal-epr/(.*)$ /$1 [R=301,L]
+  RewriteRule ^producer-p4-imported-scrap-non-ferrous-metals/?$ /applicant-types/producer-p4/ [R=301,L]
+  RewriteRule ^manufacturer-non-ferrous-metals-epr/?$ /applicant-types/manufacturer/ [R=301,L]
+  RewriteRule ^producer-p1-own-manufacturing-branding/?$ /applicant-types/producer-p1/ [R=301,L]
+  RewriteRule ^producer-p2-outsourced-manufacturing-branding/?$ /applicant-types/producer-p2/ [R=301,L]
+  RewriteRule ^producer-p3-imported-products/?$ /applicant-types/producer-p3/ [R=301,L]
+  RewriteRule ^refurbisher-non-ferrous-metals-epr/?$ /applicant-types/refurbisher/ [R=301,L]
+  RewriteRule ^collection-agent-non-ferrous-metals-epr/?$ /applicant-types/collection-agent/ [R=301,L]
+  RewriteRule ^recycler-non-ferrous-metals-epr/?$ /applicant-types/recycler/ [R=301,L]
+
+  # SPA history routing fallback when serving dist/ statically
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>

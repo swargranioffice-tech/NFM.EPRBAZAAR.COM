@@ -1,0 +1,8 @@
+{
+  "name": "EPR Bazaar – Non-Ferrous Metal Scrap EPR Registration India",
+  "description": "CPCB Non-Ferrous Metal Scrap EPR registration, Schedule X compliance, Aluminium, Copper, and Zinc recycling target management, and EPR certificates by EPR Bazaar (Nyanvi Ecoclean Private Limited).",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
