@@ -7,7 +7,7 @@ This repository is ready for deployment to **`https://nfm.eprbazaar.com`** via *
 ## 1. WhatsApp Form Divert (`+91 74391 03014`)
 Whenever a visitor submits any enquiry form (Homepage Contact, Popup Modal, Applicant Pages, Schedule X Product Pages, Calculator, Fees, FAQs, or Contact Us):
 1. All required fields and consent are validated cleanly.
-2. When running on the Node.js Express backend, the enquiry is also saved to `data/enquiries.json` (and optionally sent via Meta WhatsApp Cloud API if server credentials are configured).
+2. When running on the Node.js Express backend, the enquiry is also saved to `data/enquiries.json`.
 3. The live page diverts directly to **`https://wa.me/917439103014?text=...`** with every submitted field pre-formatted (Ref ID, Name, Company, Mobile, Email, City, State, Applicant Type, Metal Category, Quantity, Page Source, Enquiry Details), plus a fallback WhatsApp button & Copy button.
 
 ---
@@ -31,8 +31,6 @@ Whenever a visitor submits any enquiry form (Homepage Contact, Popup Modal, Appl
    - `SITE_BASE_URL=https://nfm.eprbazaar.com`
    - `VITE_SITE_URL=https://nfm.eprbazaar.com`
    - `VITE_WHATSAPP_REDIRECT_NUMBER=917439103014`
-   - *(Optional GA4 & Search Console)* `VITE_GA4_MEASUREMENT_ID=G-XXXXXXXXXX` and `VITE_GSC_VERIFICATION_TOKEN=...`
-   - *(Optional automated server-side Cloud API alerts)* `LEAD_WHATSAPP_TO`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`
 
 ---
 

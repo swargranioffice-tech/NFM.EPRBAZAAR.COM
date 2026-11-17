@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { CheckCircle2, AlertCircle, MessageCircle, Copy, Check } from 'lucide-react';
 import { EXACT_EIGHT_APPLICANT_OPTIONS } from '../../data/applicantTypesData';
 import { INDIAN_STATES_AND_UTS } from '../../data/indianStates';
-import { trackEnquiryConversion } from '../../utils/analytics';
 
 export type MetalCategoryOption =
   | 'Aluminium'
@@ -52,7 +51,7 @@ interface FormFields {
 interface SubmissionResult {
   enquiryId: string;
   submittedAt?: string;
-  notificationStatus: 'sent' | 'failed' | 'provider_unconfigured' | 'queued' | 'whatsapp_handoff';
+  notificationStatus: 'saved' | 'queued' | 'whatsapp_handoff';
   message: string;
   whatsappUrl: string;
   formattedMessage: string;
@@ -246,7 +245,6 @@ export function LeadEnquiryForm({
       autoDiverting: isTopLevelWindow,
     });
 
-    trackEnquiryConversion(fields.applicantType, fields.metalCategory, pageSource);
     if (onSuccessSubmitted) {
       onSuccessSubmitted(enquiryId);
     }

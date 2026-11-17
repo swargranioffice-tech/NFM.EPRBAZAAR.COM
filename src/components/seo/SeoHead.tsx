@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { COMPANY_INFO, REGISTRATION_STEPS } from '../../data/nonFerrousData';
 import { SITE_ORIGIN } from '../../data/seoRoutesData';
 import type { ApplicantFaq } from '../../data/applicantTypesData';
-import { getSearchConsoleToken, trackPageView } from '../../utils/analytics';
 import { JsonLdSchema } from './JsonLdSchema';
 
 export interface SeoBreadcrumbSchemaItem {
@@ -51,7 +50,7 @@ function upsertLinkTag(rel: string, href: string, hreflang?: string) {
 /**
  * Route-aware SEO head manager synchronizing unique titles, descriptions,
  * canonical URLs, India hreflang/geo metadata, OpenGraph/Twitter cards,
- * Search Console verification, GA4 pageviews, and eligible Schema.org JSON-LD.
+ * and eligible Schema.org JSON-LD.
  */
 export function SeoHead({
   title,
@@ -77,11 +76,6 @@ export function SeoHead({
     upsertMetaTag('name', 'geo.region', 'IN');
     upsertMetaTag('name', 'geo.placename', 'India');
 
-    const gscToken = getSearchConsoleToken();
-    if (gscToken) {
-      upsertMetaTag('name', 'google-site-verification', gscToken);
-    }
-
     upsertMetaTag('property', 'og:type', 'website');
     upsertMetaTag('property', 'og:locale', 'en_IN');
     upsertMetaTag('property', 'og:site_name', 'EPR Bazaar');
@@ -98,8 +92,6 @@ export function SeoHead({
 
     upsertLinkTag('canonical', canonicalUrl);
     upsertLinkTag('alternate', canonicalUrl, 'en-IN');
-
-    trackPageView(normalizedPath, title);
   }, [title, description, canonicalUrl, normalizedPath, absoluteOgImage, ogImageAlt]);
 
   const organizationSchema = {

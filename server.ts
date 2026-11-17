@@ -93,8 +93,6 @@ const ALLOWED_METAL_CATEGORIES = new Set([
   'Other/Not Sure',
 ]);
 
-type DeliveryStatus = 'sent' | 'failed' | 'provider_unconfigured';
-
 interface StoredEnquiry {
   enquiryId: string;
   dedupHash: string;
@@ -112,10 +110,6 @@ interface StoredEnquiry {
   consentAccepted: boolean;
   submittedAtIso: string;
   submittedAtIst: string;
-  deliveryStatus: DeliveryStatus;
-  deliveryAttempts: number;
-  providerMessageId?: string;
-  deliveryError?: string;
 }
 
 // Simple in-memory IP rate limit store (6 requests per 15 min)
@@ -183,114 +177,6 @@ function formatIstTimestamp(date: Date): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
-}
-
-function formatWhatsAppDestination(raw: string): string {
-  return raw.replace(/[^\d]/g, '');
-}
-
-async function sendWhatsAppNotificationWithRetry(
-  enquiry: StoredEnquiry
-): Promise<{
-  status: DeliveryStatus;
-  attempts: number;
-  providerMessageId?: string;
-  error?: string;
-}> {
-  const destinationRaw = process.env.LEAD_WHATSAPP_TO || '';
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN || '';
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID || '';
-  const apiVersion = process.env.WHATSAPP_API_VERSION || 'v21.0';
-
-  const destinationDigits = formatWhatsAppDestination(destinationRaw);
-
-  if (!destinationDigits || !accessToken.trim() || !phoneNumberId.trim()) {
-    return {
-      status: 'provider_unconfigured',
-      attempts: 0,
-      error: 'WhatsApp Business Cloud API credentials or destination number not configured on server.',
-    };
-  }
-
-  const endpoint = `https://graph.facebook.com/${apiVersion}/${encodeURIComponent(
-    phoneNumberId.trim()
-  )}/messages`;
-
-  const messageBody = [
-    'EPR BAZAAR — New Non-Ferrous Metal EPR Enquiry',
-    `Ref: ${enquiry.enquiryId}`,
-    `Name: ${enquiry.fullName}`,
-    `Company: ${enquiry.companyName}`,
-    `Mobile: ${enquiry.mobile}`,
-    `Email: ${enquiry.email}`,
-    `Location: ${enquiry.city}, ${enquiry.state}`,
-    `Applicant Type: ${enquiry.applicantType}`,
-    `Metal Category: ${enquiry.metalCategory}`,
-    `Quantity: ${enquiry.quantity}`,
-    `Page Source: ${enquiry.pageSource}`,
-    `Enquiry: ${enquiry.enquiryDetails || 'N/A'}`,
-    `Submitted: ${enquiry.submittedAtIst} (IST)`,
-  ].join('\n');
-
-  const maxAttempts = 3;
-  let lastError = 'Unknown delivery error';
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken.trim()}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          recipient_type: 'individual',
-          to: destinationDigits,
-          type: 'text',
-          text: {
-            preview_url: false,
-            body: messageBody,
-          },
-        }),
-      });
-
-      if (response.ok) {
-        const data = (await response.json()) as {
-          messages?: Array<{ id?: string }>;
-        };
-        return {
-          status: 'sent',
-          attempts: attempt,
-          providerMessageId: data.messages?.[0]?.id,
-        };
-      }
-
-      const errorText = await response.text().catch(() => '');
-      lastError = `HTTP ${response.status}: ${errorText.slice(0, 200)}`;
-
-      // Retry only on transient rate-limit or 5xx server failures
-      if (response.status !== 429 && response.status < 500) {
-        return {
-          status: 'failed',
-          attempts: attempt,
-          error: lastError,
-        };
-      }
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : 'Network error';
-    }
-
-    if (attempt < maxAttempts) {
-      await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
-    }
-  }
-
-  return {
-    status: 'failed',
-    attempts: maxAttempts,
-    error: lastError,
-  };
 }
 
 async function createServer() {
@@ -449,7 +335,7 @@ async function createServer() {
         ok: true,
         duplicate: true,
         enquiryId: duplicateEnquiry.enquiryId,
-        notificationStatus: duplicateEnquiry.deliveryStatus,
+        notificationStatus: 'saved',
         message: `Your enquiry was already recorded under reference ${duplicateEnquiry.enquiryId}.`,
       });
       return;
@@ -476,51 +362,21 @@ async function createServer() {
       consentAccepted,
       submittedAtIso: now.toISOString(),
       submittedAtIst: formatIstTimestamp(now),
-      deliveryStatus: 'provider_unconfigured',
-      deliveryAttempts: 0,
     };
 
-    // Persist initial enquiry safely
+    // Persist enquiry safely
     await enqueuePersist(async () => {
       const current = await readStoredEnquiries();
       current.push(newRecord);
       await writeStoredEnquiries(current);
     });
 
-    // Attempt WhatsApp Business Cloud API notification
-    const delivery = await sendWhatsAppNotificationWithRetry(newRecord);
-
-    // Update recorded delivery status safely
-    await enqueuePersist(async () => {
-      const current = await readStoredEnquiries();
-      const target = current.find((item) => item.enquiryId === enquiryId);
-      if (target) {
-        target.deliveryStatus = delivery.status;
-        target.deliveryAttempts = delivery.attempts;
-        if (delivery.providerMessageId) {
-          target.providerMessageId = delivery.providerMessageId;
-        }
-        if (delivery.error) {
-          target.deliveryError = delivery.error;
-        }
-        await writeStoredEnquiries(current);
-      }
-    });
-
-    // Honest user-facing status without exposing secrets or claiming delivery when unconfigured
-    const responseMessage =
-      delivery.status === 'sent'
-        ? `Enquiry ${enquiryId} saved and compliance alert dispatched via WhatsApp.`
-        : delivery.status === 'provider_unconfigured'
-        ? `Enquiry ${enquiryId} securely saved. Instant WhatsApp alert is awaiting server provider configuration; our team will follow up by email/phone.`
-        : `Enquiry ${enquiryId} securely saved. Automated WhatsApp dispatch encountered a temporary error and has been logged for follow-up.`;
-
     res.status(201).json({
       ok: true,
       enquiryId,
       submittedAt: newRecord.submittedAtIst,
-      notificationStatus: delivery.status,
-      message: responseMessage,
+      notificationStatus: 'saved',
+      message: `Enquiry ${enquiryId} securely saved. Continue on WhatsApp to send your details.`,
     });
   });
 

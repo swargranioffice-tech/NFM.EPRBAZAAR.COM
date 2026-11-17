@@ -32,7 +32,6 @@ import { findApplicantBySlug } from './data/applicantTypesData';
 import { findScheduleXProductBySlug } from './data/scheduleXData';
 import { findMetalPageBySlug, STATIC_ROUTES } from './data/seoRoutesData';
 import { CPCB_64_FAQS } from './data/cpcbFaqsData';
-import { ensureGa4Initialized } from './utils/analytics';
 
 function normalizePathname(rawPath: string): string {
   if (!rawPath || rawPath === '/' || rawPath === '/non-ferrous-metal-epr' || rawPath === '/non-ferrous-metal-epr/') {
@@ -48,7 +47,6 @@ export default function App() {
   const [pathname, setPathname] = useState<string>(() => normalizePathname(window.location.pathname));
 
   useEffect(() => {
-    ensureGa4Initialized();
     const handlePopState = () => {
       setPathname(normalizePathname(window.location.pathname));
     };
