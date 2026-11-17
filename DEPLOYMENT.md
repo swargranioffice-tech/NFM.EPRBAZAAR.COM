@@ -51,7 +51,7 @@ If deploying as a static Vite build via GitHub Integration / GitHub Actions to H
 ---
 
 ## 6. GitHub Commit & Hostinger Redeploy Checklist
-- `.gitignore` anchors runtime storage strictly to `/data/` (`!src/data/`), ensuring all TypeScript modules in `src/data/` (`applicantTypesData.ts`, `scheduleXData.ts`, `seoRoutesData.ts`, `cpcbFaqsData.ts`, `nonFerrousData.ts`, `indianStates.ts`) are committed to GitHub.
+- `.gitignore` contains no exclusion rules for `data/` or `src/data/`, ensuring all TypeScript modules in `src/data/` (`applicantTypesData.ts`, `scheduleXData.ts`, `seoRoutesData.ts`, `cpcbFaqsData.ts`, `nonFerrousData.ts`, `indianStates.ts`) are committed to GitHub.
 - `package.json` aligns `esbuild` (`^0.28.2`) with Vite `8.3.8` (`package-lock.json` included), so standard `npm install && npm run build` runs cleanly on Hostinger without `--legacy-peer-deps`.
 - Commit and push all updated files:
   `git add .gitignore src/data/ package.json package-lock.json DEPLOYMENT.md && git commit -m "Fix missing EPR data modules and dependencies" && git push origin main`
