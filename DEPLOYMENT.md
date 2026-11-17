@@ -47,3 +47,11 @@ If deploying as a static Vite build via GitHub Integration / GitHub Actions to H
 ## 5. Google Search Console Post-Launch Check
 1. Open `https://nfm.eprbazaar.com/robots.txt` and `https://nfm.eprbazaar.com/sitemap.xml`.
 2. Add property `https://nfm.eprbazaar.com` in Google Search Console and submit `https://nfm.eprbazaar.com/sitemap.xml`.
+
+---
+
+## 6. GitHub Commit & Hostinger Redeploy Checklist
+- `.gitignore` anchors runtime storage strictly to `/data/` (`!src/data/`), ensuring all TypeScript modules in `src/data/` (`applicantTypesData.ts`, `scheduleXData.ts`, `seoRoutesData.ts`, `cpcbFaqsData.ts`, `nonFerrousData.ts`, `indianStates.ts`) are committed to GitHub.
+- `.npmrc` includes `legacy-peer-deps=true` so `npm install && npm run build` runs cleanly on Hostinger without peer dependency failures.
+- If `src/data/` was missing in an earlier commit, commit all updated files (`git add .gitignore .npmrc src/data DEPLOYMENT.md && git commit -m "Include src/data and npmrc for Hostinger build" && git push`) and trigger a fresh deploy in Hostinger.
+
