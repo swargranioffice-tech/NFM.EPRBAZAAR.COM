@@ -218,6 +218,8 @@ export function findMetalPageBySlug(pathname: string): MetalRegistrationPageData
 }
 
 export const findSEOPageBySlug = findMetalPageBySlug;
+export const SEO_ROUTES = STATIC_ROUTES;
+
 
 
 export interface SitemapUrlEntry {

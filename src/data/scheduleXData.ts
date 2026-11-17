@@ -653,3 +653,6 @@ export function findScheduleXProductBySlug(pathname: string): ScheduleXProductDe
     (item) => item.slug === withoutPrefix || item.slug === normalized
   );
 }
+
+export const scheduleXData = SCHEDULE_X_PRODUCT_DETAILS;
+
